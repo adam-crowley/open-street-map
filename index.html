@@ -18,9 +18,12 @@
 <body>
 
 <div>
-  <label for="addressInput">Enter Address:</label><br>
-  <input type="text" id="addressInput" placeholder="Enter address">
-  <button onclick="locateAddress()">Locate</button>
+  
+    <label for="addressInput">Enter Address:</label><br>
+    <input type="text" id="addressInput" placeholder="Enter address">
+    <button onclick="locateAddress()">Locate</button>
+    <div id="error"></div>
+  
   <br><br>
 </div>
 
@@ -29,10 +32,10 @@
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 <script>
-  var map = L.map('map').setView([0, 0], 13);
+  var map = L.map('map').setView([-41.2858, 174.78682], 4);
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 12.4,
+    maxZoom: 12,
     attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
   }).addTo(map);
 
@@ -46,7 +49,7 @@
   }
 
   function getAddressCoordinates(address) {
-    var url = 'https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(address);
+    var url = 'https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(address) + ', New Zealand';
     axios.get(url)
       .then(function (response) {
         if (response.data.length > 0) {
@@ -54,12 +57,13 @@
           var lon = response.data[0].lon;
           displayRadius(lat, lon);
           map.setView([lat, lon], 13);
+          clearError();
         } else {
-          alert('Address not found');
+          displayError('Address not found');
         }
       })
       .catch(function (error) {
-        console.log(error);
+        displayError('Error fetching address coordinates');
       });
   }
 
@@ -67,6 +71,23 @@
     var address = document.getElementById('addressInput').value;
     getAddressCoordinates(address);
   }
+
+  function displayError(message) {
+    var errorElement = document.getElementById('error');
+    errorElement.textContent = message;
+  }
+
+  function clearError() {
+    var errorElement = document.getElementById('error');
+    errorElement.textContent = '';
+  }
+
+  document.getElementById('addressInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      locateAddress();
+    }
+  });
+
 </script>
 
 </body>
