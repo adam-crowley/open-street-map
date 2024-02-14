@@ -1,11 +1,70 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
+  <title>Display 4km Radius Around Address</title>
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    #map {
+      height: 400px;
+    }
+  </style>
 </head>
 <body>
-  
+
+<div>
+  <label for="addressInput">Enter Address:</label><br>
+  <input type="text" id="addressInput" placeholder="Enter address">
+  <button onclick="locateAddress()">Locate</button>
+  <br><br>
+</div>
+
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script>
+  var map = L.map('map').setView([0, 0], 13);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 12.4,
+    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  }).addTo(map);
+
+  function displayRadius(lat, lon) {
+    L.circle([lat, lon], {
+      color: '#6AA2FA',
+      fillColor: '#6AA2FA',
+      fillOpacity: 0.15,
+      radius: 4000
+    }).addTo(map);
+  }
+
+  function getAddressCoordinates(address) {
+    var url = 'https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(address);
+    axios.get(url)
+      .then(function (response) {
+        if (response.data.length > 0) {
+          var lat = response.data[0].lat;
+          var lon = response.data[0].lon;
+          displayRadius(lat, lon);
+          map.setView([lat, lon], 13);
+        } else {
+          alert('Address not found');
+        }
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  }
+
+  function locateAddress() {
+    var address = document.getElementById('addressInput').value;
+    getAddressCoordinates(address);
+  }
+</script>
+
 </body>
 </html>
+
